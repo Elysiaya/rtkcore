@@ -1,0 +1,62 @@
+@using MudBlazor
+@inject Rtk.Web.Services.RtkLibConfigState ConfigState
+
+@using Rtk.Core
+
+<MudCard Elevation="1">
+    <MudCardHeader disabledivider="true">
+        <CardHeaderContent>
+            <MudText Typo="Typo.subtitle1">定位参数设置</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm>
+            <MudSelect @bind-Value="ConfigState.Options.SolutionMode" Label="解算模式" Dense="true">
+                <MudSelectItem Value="@SolutionMode.SPP">单点定位（SPP）</MudSelectItem>
+                <MudSelectItem Value="@SolutionMode.PPP">精密单点定位（PPP）</MudSelectItem>
+                <MudSelectItem Value="@SolutionMode.RTK">实时动态定位（RTK）</MudSelectItem>
+            </MudSelect>
+            <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">卫星系统</MudText>
+            <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
+                <MudCheckBox @bind-Value="ConfigState.Options.UseGPS" Label="GPS" />
+                <MudCheckBox @bind-Value="ConfigState.Options.UseGLONASS" Label="GLONASS" />
+                <MudCheckBox @bind-Value="ConfigState.Options.UseGALILEO" Label="GALILEO" />
+                <MudCheckBox @bind-Value="ConfigState.Options.UseBDS" Label="北斗" />
+            </MudStack>
+            <MudSelect @bind-Value="ConfigState.Options.FilterType" Label="Filter Type" Dense="true" Class="mt-4">
+                <MudSelectItem Value="@FilterType.Forward">Forward</MudSelectItem>
+                <MudSelectItem Value="@FilterType.Backward">Backward</MudSelectItem>
+                <MudSelectItem Value="@FilterType.Combined">Combined</MudSelectItem>
+                <MudSelectItem Value="@FilterType.Combined_npr">Combined_npr</MudSelectItem>
+            </MudSelect>
+            <MudSelect @bind-Value="ConfigState.Options.Frequency" Label="频点" Dense="true" Class="mt-2">
+                <MudSelectItem Value="@FreqType.L1">L1</MudSelectItem>
+                <MudSelectItem Value="@FreqType.L1_L2">L1+L2</MudSelectItem>
+                <MudSelectItem Value="@FreqType.L1_L2_L5">L1+L2+L5</MudSelectItem>
+            </MudSelect>
+            <MudTextField @bind-Value="ConfigState.Options.ElevationMaskDeg" Label="高度截止角(°)" Dense="true" Class="mt-2"
+                Type="number" />
+            <MudSelect @bind-Value="ConfigState.Options.Iono" Label="Ionosphere Option" Dense="true" Class="mt-2">
+                <MudSelectItem Value="@IonosphereOption.OFF">OFF</MudSelectItem>
+                <MudSelectItem Value="@IonosphereOption.BroadCast">BroadCast</MudSelectItem>
+                <MudSelectItem Value="@IonosphereOption.SBAS">SBAS</MudSelectItem>
+                <MudSelectItem Value="@IonosphereOption.IF_LC">IF_LC</MudSelectItem>
+                <MudSelectItem Value="@IonosphereOption.Estimate_STEC">Estimate_STEC</MudSelectItem>
+                <MudSelectItem Value="@IonosphereOption.IONEX_TEC">IONEX_TEC</MudSelectItem>
+                <MudSelectItem Value="@IonosphereOption.QZSS_BroadCast">QZSS_BroadCast</MudSelectItem>
+            </MudSelect>
+            <MudSelect @bind-Value="ConfigState.Options.Trop" Label="Troposphere Option" Dense="true" Class="mt-2">
+                <MudSelectItem Value="@TroposphereOption.OFF">OFF</MudSelectItem>
+                <MudSelectItem Value="@TroposphereOption.Saastamoinen">Saastamoinen</MudSelectItem>
+                <MudSelectItem Value="@TroposphereOption.SBAS">SBAS</MudSelectItem>
+                <MudSelectItem Value="@TroposphereOption.Estimate_ZTD">Estimate_ZTD</MudSelectItem>
+                <MudSelectItem Value="@TroposphereOption.Estimate_ZTD_Grad">Estimate_ZTD_Grad</MudSelectItem>
+            </MudSelect>
+            <MudSelect @bind-Value="ConfigState.Options.Ephemeris" Label="Satellite Ephemeris" Dense="true"
+                Class="mt-2">
+                <MudSelectItem Value="@SatelliteEphemeris.Broadcast">Broadcast</MudSelectItem>
+                <MudSelectItem Value="@SatelliteEphemeris.Precise">Precise</MudSelectItem>
+            </MudSelect>
+        </MudForm>
+    </MudCardContent>
+</MudCard>

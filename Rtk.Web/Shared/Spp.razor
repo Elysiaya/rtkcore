@@ -1,0 +1,178 @@
+@inject ISnackbar Snackbar
+@inject RtkQueueService QueueService
+@inject IWebHostEnvironment Env
+
+@inject Rtk.Web.Services.RtkLibConfigState ConfigState
+@using Rtk.Core
+@using System.Text
+@using Rtk.Download
+
+<MudForm>
+    <MudText Typo="Typo.h6">观测值文件</MudText>
+    <MudSpacer />
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadObs">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                上传观测文件 (.o/.rnx)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudText Typo="Typo.caption">@_obsFileName</MudText>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.h6">导航文件</MudText>
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadNav">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SatelliteAlt">
+                上传导航文件 (.n)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download"
+        OnClick="DownloadBroadcastEphemeris" Style="margin-top: 8px; width: fit-content;">
+        自动下载广播星历
+    </MudButton>
+    <MudText Typo="Typo.caption">@_navFileName</MudText>
+
+
+
+    <div class="mt-6">
+        <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" OnClick="SubmitTask"
+            Disabled="@(_obsFile == null || (_navFile == null && _serverNavFilePath == null))">
+            开始解算
+        </MudButton>
+    </div>
+</MudForm>
+
+@code {
+    private IBrowserFile? _obsFile;
+    private IBrowserFile? _navFile;//始终表示手动上传的文件
+    private string _obsFileName = "未选择文件";// 用于显示观测文件名
+    private string _navFileName = "未选择文件";// 用于显示导航文件名
+    private string? _serverNavFilePath;// 用于存储自动下载的星历文件在服务器上的临时路径
+
+    // 简单的本地任务列表（为了演示，实际应该读数据库）
+    [Parameter]
+    public EventCallback<TaskViewModel> OnTaskSubmitted { get; set; }
+
+    private void UploadObs(IBrowserFile file)
+    {
+        _obsFile = file;
+        _obsFileName = file.Name;
+    }
+
+    private void UploadNav(IBrowserFile file)
+    {
+
+        _serverNavFilePath = null;
+
+        _navFile = file;
+        _navFileName = file.Name;
+    }
+    private async Task<string?> DownloadBroadcastEphemeris()
+    {
+        if (_obsFile == null)
+        {
+            Snackbar.Add("请先上传观测文件！", Severity.Warning);
+            return null;
+        }
+
+        try
+        {
+            var (year, doy) = ParseGpsTimeFromRinex(_obsFile.Name);
+
+            // 构造本地保存路径
+            // 下载到服务器的一个公共目录
+            var tempDir = Path.Combine(Env.ContentRootPath, "DataPool", "brdc");
+            Directory.CreateDirectory(tempDir);
+
+            var navFileName = $"BRDC00IGS_R_{year}{doy:000}0000_01D_MN.rnx.gz";
+            _serverNavFilePath = Path.Combine(tempDir, navFileName);
+            Snackbar.Add($"正在从武汉大学服务器下载广播星历 ({year}年 第{doy}天)...", Severity.Info);
+            if (!File.Exists(_serverNavFilePath))
+            {
+                await GNSSDataDownload.DownloadBrdcFile(doy, year, _serverNavFilePath);
+            }
+            _navFileName = navFileName;
+            Snackbar.Add($"广播星历下载成功：{_navFileName}", Severity.Success);
+            return _serverNavFilePath;
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"下载广播星历失败：{ex.Message}", Severity.Error);
+            return null;
+        }
+    }
+
+    private (int year, int doy) ParseGpsTimeFromRinex(string rinexFileName)
+    {
+        // 1. 获取不带路径的纯文件名
+        string fileName = Path.GetFileName(rinexFileName);
+
+        if (fileName.Length!=38)
+        {
+            throw new FormatException($"文件名格式无法识别: {fileName}");
+        }
+        // 2. 提取时间部分 (假设格式固定)
+        int year = int.Parse(fileName[12..16]);
+        int doy = int.Parse(fileName[16..19]);
+        return (year, doy);
+    }
+
+    private async Task SubmitTask()
+    {
+        //未上传观测文件
+        if (_obsFile == null) return;
+        //未上传导航文件且未下载导航文件
+        if (_navFile == null && _serverNavFilePath == null) return;
+
+        var taskId = Guid.NewGuid().ToString("N");
+        var taskFolder = Path.Combine(Env.ContentRootPath, "Data", "Tasks", taskId);
+        Directory.CreateDirectory(taskFolder);
+
+        // 1. 保存文件到服务器 (Blazor 上传流)
+        // 注意：BlazorServer上传大文件需要配置 MaxAllowedSize，这里暂设 50MB
+        long maxFileSize = 1024 * 1024 * 50;
+
+        var obsPath = Path.Combine(taskFolder, _obsFile.Name);
+
+        var navPath = string.Empty;
+        if (_serverNavFilePath != null)
+        {
+            // 使用服务器上已下载的导航文件
+            navPath = Path.Combine(taskFolder, Path.GetFileName(_serverNavFilePath));
+            navPath = navPath.EndsWith(".gz") ? navPath[..^3] : navPath;
+            Decompress.DecompressGzip(_serverNavFilePath, navPath);
+        }
+        else
+        {
+            // 使用手动上传的导航文件
+            navPath = Path.Combine(taskFolder, _navFile.Name);
+            await using var s2 = new FileStream(navPath, FileMode.Create);
+            await _navFile.OpenReadStream(maxFileSize).CopyToAsync(s2);
+        }
+
+        var confPath = Path.Combine(taskFolder, "rtk.conf");
+        var resultPath = Path.Combine(taskFolder, "result.pos");
+
+        await using var s1 = new FileStream(obsPath, FileMode.Create);
+        await _obsFile.OpenReadStream(maxFileSize).CopyToAsync(s1);
+
+        var config = ConfigState.Options.ToConfig();
+        var text = config.SaveToText();
+        await File.WriteAllTextAsync(confPath, text, Encoding.UTF8);
+
+        // 2. 直接调用 Service 入队 (不需要走 HTTP API，因为我们在同一个进程里！)
+        var taskPayload = new RtkTask(taskId, confPath, obsPath, navPath, resultPath);
+        await QueueService.EnqueueAsync(taskPayload);
+
+        // 3. 更新 UI
+        TaskViewModel? newTask = new TaskViewModel { TaskId = taskId, ResultPath = resultPath };
+        await OnTaskSubmitted.InvokeAsync(newTask); // 通知父组件
+
+        Snackbar.Add("任务已提交，正在后台计算...", Severity.Info);
+    }
+}

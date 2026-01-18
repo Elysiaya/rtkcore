@@ -1,0 +1,6 @@
+@Rtk.Web_HostAddress = http://localhost:5162
+
+GET {{Rtk.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,90 @@
+@page "/"
+@inject ISnackbar Snackbar
+
+<MudGrid>
+    @* 文件上传界面 *@
+    <MudItem xs="12" md="4">
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">新建任务</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent Class="pt-0">
+                <MudTabs @bind-ActivePanelIndex="_tabIndex" Style="min-height:20px;padding-top:2px;padding-bottom:2px;">
+                    <MudTabPanel Text="SPP" Class="pt-6">
+                        <Spp OnTaskSubmitted="HandleTaskSubmitted" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="PPP" Class="pt-6">
+                        <Ppp OnTaskSubmitted="HandleTaskSubmitted" />
+                    </MudTabPanel>
+                </MudTabs>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    @* 设置界面 *@
+    <MudItem xs="12" md="4">
+        <RtkLibConfig />
+    </MudItem>
+    @* 任务列表界面 *@
+    <MudItem xs="12" md="4">
+        <MudTable Items="@_tasks" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>任务 ID</MudTh>
+                <MudTh>状态</MudTh>
+                <MudTh>操作</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.TaskId.Substring(0, 8)...</MudTd>
+                <MudTd DataLabel="状态">
+                    @if (context.IsCompleted)
+                    {
+                        <MudChip T="String" Color="Color.Success" Size="Size.Small">完成</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="String" Color="Color.Warning" Size="Size.Small">处理中</MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="操作">
+                    @if (context.IsCompleted)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                            Href="@($"/api/rtk/download/{context.TaskId}")" Target="_blank">
+                            下载结果
+                        </MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudItem>
+    <MudItem xs="12" md="12">
+        <Map />
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<TaskViewModel> _tasks = new();
+    private int _tabIndex = 0;
+
+    private void HandleTaskSubmitted(TaskViewModel newTask)
+    {
+        _tasks.Insert(0, newTask);
+        _ = CheckStatus(newTask);
+    }
+    private async Task CheckStatus(TaskViewModel task)
+    {
+        while (true)
+        {
+            await Task.Delay(1000);
+            if (File.Exists(task.ResultPath))
+            {
+                task.IsCompleted = true;
+                await InvokeAsync(StateHasChanged);
+                Snackbar.Add("任务已完成！", Severity.Success);
+                break;
+            }
+        }
+    }
+}
+

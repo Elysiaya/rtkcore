@@ -1,0 +1,160 @@
+@inject ISnackbar Snackbar
+@inject RtkQueueService QueueService
+@inject IWebHostEnvironment Env
+
+<MudForm>
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadObs">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                上传观测文件 (.o/.rnx)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudText Typo="Typo.caption">@_obsFileName</MudText>
+
+    <div class="mt-4"></div>
+
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadNav">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.SatelliteAlt">
+                上传导航文件 (.n)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudText Typo="Typo.caption">@_navFileName</MudText>
+
+    <div class="mt-4"></div>
+
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadSp3">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.Timeline">
+                上传精密星历文件 (.sp3)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudText Typo="Typo.caption">@_sp3FileName</MudText>
+
+    <div class="mt-4"></div>
+
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadClk">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="@Icons.Material.Filled.AccessTime">
+                上传精密钟差文件 (.clk)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudText Typo="Typo.caption">@_clkFileName</MudText>
+
+    <div class="mt-4"></div>
+
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadConf">
+        <ActivatorContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Settings">
+                上传配置文件 (.conf)
+            </MudButton>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudText Typo="Typo.caption">@_confFileName</MudText>
+
+    <div class="mt-6">
+        <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" OnClick="SubmitTask"
+            Disabled="@(_obsFile == null || _navFile == null || _sp3File == null || _clkFile == null)">
+            开始解算
+        </MudButton>
+    </div>
+</MudForm>
+
+@code {
+    private IBrowserFile? _obsFile;
+    private IBrowserFile? _navFile;
+    private IBrowserFile? _sp3File;
+    private IBrowserFile? _clkFile;
+    private IBrowserFile? _confFile;
+    private string _obsFileName = "未选择文件";
+    private string _navFileName = "未选择文件";
+    private string _sp3FileName = "未选择文件";
+    private string _clkFileName = "未选择文件";
+    private string _confFileName = "未选择文件";
+
+    // 简单的本地任务列表（为了演示，实际应该读数据库）
+    [Parameter]
+    public EventCallback<TaskViewModel> OnTaskSubmitted { get; set; }
+
+    private void UploadObs(IBrowserFile file)
+    {
+        _obsFile = file;
+        _obsFileName = file.Name;
+    }
+
+    private void UploadNav(IBrowserFile file)
+    {
+        _navFile = file;
+        _navFileName = file.Name;
+    }
+
+    private void UploadSp3(IBrowserFile file)
+    {
+        _sp3File = file;
+        _sp3FileName = file.Name;
+    }
+
+    private void UploadClk(IBrowserFile file)
+    {
+        _clkFile = file;
+        _clkFileName = file.Name;
+    }
+
+    private void UploadConf(IBrowserFile file)
+    {
+        _confFile = file;
+        _confFileName = file.Name;
+    }
+
+    private async Task SubmitTask()
+    {
+        if (_obsFile == null || _navFile == null || _sp3File == null || _clkFile == null) return;
+
+        var taskId = Guid.NewGuid().ToString("N");
+        var taskFolder = Path.Combine(Env.ContentRootPath, "Data", "Tasks", taskId);
+        Directory.CreateDirectory(taskFolder);
+
+        // 1. 保存文件到服务器 (Blazor 上传流)
+        // 注意：BlazorServer上传大文件需要配置 MaxAllowedSize，这里暂设 50MB
+        long maxFileSize = 1024 * 1024 * 50;
+
+        var obsPath = Path.Combine(taskFolder, _obsFile.Name);
+        var navPath = Path.Combine(taskFolder, _navFile.Name);
+        var sp3Path = Path.Combine(taskFolder, _sp3File.Name);
+        var clkPath = Path.Combine(taskFolder, _clkFile.Name);
+        var confPath = Path.Combine(taskFolder, _confFile?.Name ?? "PPP.conf");
+        var resultPath = Path.Combine(taskFolder, "result.pos");
+
+        await using var s1 = new FileStream(obsPath, FileMode.Create);
+        await _obsFile.OpenReadStream(maxFileSize).CopyToAsync(s1);
+
+        await using var s2 = new FileStream(navPath, FileMode.Create);
+        await _navFile.OpenReadStream(maxFileSize).CopyToAsync(s2);
+
+        await using var s3 = new FileStream(sp3Path, FileMode.Create);
+        await _sp3File.OpenReadStream(maxFileSize).CopyToAsync(s3);
+
+        await using var s4 = new FileStream(clkPath, FileMode.Create);
+        await _clkFile.OpenReadStream(maxFileSize).CopyToAsync(s4);
+
+        if (_confFile != null)
+        {
+            await using var s5 = new FileStream(confPath, FileMode.Create);
+            await _confFile.OpenReadStream(maxFileSize).CopyToAsync(s5);
+        }
+
+        // 这里需要根据你的业务逻辑构造 PPP 任务对象
+        var taskPayload = new RtkTask(taskId, confPath, obsPath, navPath, resultPath, sp3Path, clkPath);
+        await QueueService.EnqueueAsync(taskPayload);
+
+        // 3. 更新 UI
+        TaskViewModel? newTask = new TaskViewModel { TaskId = taskId, ResultPath = resultPath };
+        await OnTaskSubmitted.InvokeAsync(newTask); // 通知父组件
+
+        Snackbar.Add("PPP任务已提交，正在后台计算...", Severity.Info);
+    }
+}

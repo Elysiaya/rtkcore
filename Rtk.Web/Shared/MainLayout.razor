@@ -1,0 +1,19 @@
+@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudThemeProvider IsDarkMode="false" /> <MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudText Typo="Typo.h5" Class="ml-3">🛰️ RTKLib 云解算平台</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Games" Color="Color.Inherit" />
+    </MudAppBar>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
