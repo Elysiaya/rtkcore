@@ -87,11 +87,3 @@ public sealed class RtkLibSPPOptions
         return config;
     }
 }
-
-public enum SolutionMode { SPP, PPP, RTK }
-public enum SatSystem { GPS, BDS, GLONASS, GALILEO}
-public enum FilterType { Forward, Backward, Combined, Combined_npr }
-public enum FreqType { L1, L1_L2, L1_L2_L5 }
-public enum IonosphereOption { OFF, BroadCast, SBAS, IF_LC, Estimate_STEC, IONEX_TEC, QZSS_BroadCast }
-public enum TroposphereOption { OFF, Saastamoinen, SBAS, Estimate_ZTD, Estimate_ZTD_Grad }
-public enum SatelliteEphemeris { Broadcast, Precise }
