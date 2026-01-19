@@ -425,7 +425,7 @@ public static class ConfigExtensions
         if (config == null) throw new ArgumentNullException(nameof(config));
         var sb = new StringBuilder();
         // header
-        string header = $"# rtkpost options ({DateTime.Now:yyyy/MM/dd HH:mm:ss}-EX 2.5.0)";
+        string header = $"# rtkpost options ({DateTime.Now:yyyy/MM/dd HH:mm:ss}-EX 2.5.0) RtkCore Generated";
         sb.AppendLine(header);
         // 加个空行
         sb.AppendLine();
