@@ -1,13 +1,18 @@
 using System;
 using FluentFTP;
+using FluentFTP.Exceptions;
 namespace Rtk.Download;
 
-public class FtpDownloader
+public class FtpDownloader:IDisposable
 {
-    string ftpServer;
-    public FtpDownloader(string ftpServer)
+    private readonly AsyncFtpClient ftpClient;
+    public FtpDownloader(string ftpServer, string ftpUser = "anonymous", string ftpPwd = "user@example.com")
     {
-        this.ftpServer = ftpServer;
+        ftpClient = new AsyncFtpClient(ftpServer, ftpUser, ftpPwd);
+        ftpClient.Config.ConnectTimeout = 30000;
+        ftpClient.Config.ReadTimeout = 30000;
+        ftpClient.Config.SelfConnectMode = FtpSelfConnectMode.Always;
+        ftpClient.Config.EncryptionMode = FtpEncryptionMode.None;
     }
     // <summary>
     /// 异步下载：输入FTP完整路径+本地保存路径，直接下载（默认匿名登录）
@@ -16,30 +21,41 @@ public class FtpDownloader
     /// <param name="localSavePath">本地保存路径，比如：D:/rtk-data/igs2024124.sp3.Z</param>
     /// <param name="ftpUser">FTP用户名，匿名登录留空或传"anonymous"</param>
     /// <param name="ftpPwd">FTP密码，匿名登录留空或传任意邮箱格式</param>
-    public async Task Download(string remotePath, string localSavePath, string ftpUser = "anonymous", string ftpPwd = "user@example.com")
+    public async Task Download(string remotePath, string localSavePath)
     {
-        // 自动处理FTP连接+下载+释放资源
-        using var ftpClient = new AsyncFtpClient(ftpServer, ftpUser, ftpPwd);
-        
-        await ftpClient.Connect();
-        if (!await ftpClient.FileExists(remotePath.TrimStart('/')))
+        int maxRetries = 3;
+        int retryDelay = 3000; // 3秒
+
+        // if (!await ftpClient.FileExists(remotePath.TrimStart('/')))
+        // {
+        //     throw new FileNotFoundException($"远程文件不存在：{remotePath}");
+        // }
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            throw new Exception($"远程文件不存在：{remotePath}");
+            try
+            {
+                await ftpClient.DownloadFile(localSavePath, remotePath.TrimStart('/'));
+                Console.WriteLine($"已下载：{remotePath} 到 {localSavePath}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"尝试 {attempt}/{maxRetries} 下载失败: {remotePath}。错误: {ex.Message}");
+                if (attempt == maxRetries)
+                {
+                    // 这是最后一次尝试，仍然失败，所以向上抛出异常
+                    throw; 
+                }
+                await Task.Delay(retryDelay);
+            }
         }
-        // 下载文件（自动覆盖已存在的本地文件）
-        await ftpClient.DownloadFile(localSavePath, remotePath.TrimStart('/'));
-        await ftpClient.Disconnect();
+    }
+    // 实现 IDisposable
+    public void Dispose()
+    {
+        ftpClient.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
 
-//解压.gz文件
-public class Decompress
-{
-    public static void DecompressGzip(string gzipFilePath, string outputFilePath)
-    {
-        using FileStream originalFileStream = new FileStream(gzipFilePath, FileMode.Open, FileAccess.Read);
-        using FileStream decompressedFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write);
-        using System.IO.Compression.GZipStream decompressionStream = new System.IO.Compression.GZipStream(originalFileStream, System.IO.Compression.CompressionMode.Decompress);
-        decompressionStream.CopyTo(decompressedFileStream);
-    }
-}
