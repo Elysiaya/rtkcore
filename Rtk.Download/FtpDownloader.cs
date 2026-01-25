@@ -57,5 +57,12 @@ public class FtpDownloader:IDisposable
         ftpClient.Dispose();
         GC.SuppressFinalize(this);
     }
+    public async Task<List<string>> ListFiles(string remoteDirectory)
+    {
+        await ftpClient.Connect();
+        var items = await ftpClient.GetListing(remoteDirectory);
+        List<string> fileNames = items.Select(item => item.Name).ToList();
+        return fileNames;
+    }
 }
 

@@ -4,7 +4,8 @@ using Rtk.Download;
 
 
 var gnssDownloader = new GNSSDataDownload();
-await gnssDownloader.DownloadIonoFile(364,364, 2025, $"./iono");
+// await gnssDownloader.DownloadIonoFile(364,364, 2025, $"./iono");
+await gnssDownloader.DownloadObsFile(1, 10, 2024, "ABMF", "./obs", true);
 // foreach (var file in Directory.GetFiles("./iono"))
 // {
 //     Console.WriteLine(file);

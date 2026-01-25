@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentFTP;
 
 namespace Rtk.Download;
@@ -8,53 +9,66 @@ public class GNSSDataDownload
     public GNSSDataDownload()
     {
     }
-    public static async Task DownloadERPFile(string remotePath, string localPath)
+    public async Task DownloadObsFile(int startdoy, int enddoy, int year, string stationName, string localPathfolder,bool decompressGzip=false)
     {
-        FtpDownloader ftp = new FtpDownloader(ftpserver);
-        await ftp.Download(remotePath, localPath);
+        if (stationName.Length != 4)
+        {
+            throw new ArgumentException("Station name must be 4 characters long.");
+        }
+        var remotePath = $"/pub/gps/data/daily/{year}/{{doy}}/{year.ToString().Substring(2)}d";
+
+        var json = await File.ReadAllTextAsync("igs_stations.json");
+        var stations = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
+        List<string> siteNames = stations.Select(s => s["name"].GetString()).Where(name => !string.IsNullOrEmpty(name)).ToList();
+
+        string? fullSiteName = siteNames
+            .FirstOrDefault(s => s.StartsWith(stationName, StringComparison.OrdinalIgnoreCase));
+
+        if (fullSiteName != null)
+        {
+            var filePattern = $"{fullSiteName.ToUpper()}_R_{year}{{doy}}0000_01D_30S_MO.crx.gz";
+            remotePath += $"/{filePattern}";
+            await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
+        }
+        else
+        {
+            throw new ArgumentException($"Station '{stationName}' not found.");
+        }
+
     }
-    public static async Task DownloadSP3File(string remotePath, string localPath)
+    public async Task DownloadERPFile(int startdoy, int enddoy, int year, string localPathfolder,bool decompressGzip=false)
     {
-        var ftpserver = "ftp://igs.gnsswhu.cn";
-        FtpDownloader ftp = new FtpDownloader(ftpserver);
-        await ftp.Download(remotePath, localPath);
+        var remotePath = "/pub/gps/products/{gpsweek}/WUM0MGXRAP_{year}{doy}0000_01D_01D_ERP.ERP.gz";
+        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
     }
-    public static async Task DownloadClockFile(string remotePath, string localPath)
+    public async Task DownloadSP3File(int startdoy, int enddoy, int year, string localPathfolder,bool decompressGzip=false)
     {
-        var ftpserver = "ftp://igs.gnsswhu.cn";
-        FtpDownloader ftp = new FtpDownloader(ftpserver);
-        await ftp.Download(remotePath, localPath);
+        var remotePath = "/pub/gps/products/{gpsweek}/WUM0MGXRAP_{year}{doy}0000_01D_05M_ORB.SP3.gz";
+        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
     }
-    public static async Task DownloadBiasFile(string remotePath, string localPath)
+    public async Task DownloadClockFile(int startdoy, int enddoy, int year, string localPathfolder,bool decompressGzip=false)
     {
-        var ftpserver = "ftp://igs.gnsswhu.cn";
-        FtpDownloader ftp = new FtpDownloader(ftpserver);
-        await ftp.Download(remotePath, localPath);
+        var remotePath = "/pub/gps/products/{gpsweek}/WUM0MGXRAP_{year}{doy}0000_01D_30S_CLK.CLK.gz";
+        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
     }
-    public static async Task DownloadAntennaFile(string remotePath, string localPath)
+    public async Task DownloadBiasFile(int startdoy, int enddoy, int year, string localPathfolder,bool decompressGzip=false)
     {
-        var ftpserver = "ftp://igs.gnsswhu.cn";
-        FtpDownloader ftp = new FtpDownloader(ftpserver);
-        await ftp.Download(remotePath, localPath);
+        var remotePath = "/pub/gps/products/{gpsweek}/WUM0MGXRAP_{year}{doy}0000_01D_01D_OSB.BIA.gz";
+        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
     }
-    public async Task DownloadBrdcFile(int startdoy, int enddoy, int year, string localPathfolder)
+    public async Task DownloadBrdcFile(int startdoy, int enddoy, int year, string localPathfolder,bool decompressGzip=false)
     {
         var remotePath = "/pub/gps/data/daily/{year}/brdc/BRDC00IGS_R_{year}{doy}0000_01D_MN.rnx.gz";
-        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder);
+        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
     }
 
-    public async Task DownloadIonoFile(int startdoy, int enddoy, int year, string localPathfolder)
+    public async Task DownloadIonoFile(int startdoy, int enddoy, int year, string localPathfolder,bool decompressGzip=false)
     {
         var remotePath = "/pub/gps/products/ionex/{year}/{doy}/COD0OPSFIN_{year}{doy}0000_01D_01H_GIM.INX.gz";
-        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder);
+        await DownloadFiles(remotePath, startdoy, enddoy, year, localPathfolder,decompressGzip);
     }
 
-    public async Task DownloadFiles(
-    string remotePathTemplate,
-    int startdoy,
-    int enddoy,
-    int year,
-    string localPathFolder)
+    public async Task DownloadFiles(string remotePathTemplate, int startdoy, int enddoy, int year, string localPathFolder,bool decompressGzip=false)
     {
         if (!Directory.Exists(localPathFolder))
         {
@@ -72,6 +86,12 @@ public class GNSSDataDownload
                 .Replace("{year}", yearStr)
                 .Replace("{doy}", doyStr);
 
+            if (remotePathTemplate.Contains("{gpsweek}"))
+            {
+                var gpsweek = GetGPSWeek(year, doy);
+                remotePath = remotePath.Replace("{gpsweek}", gpsweek.ToString("0000"));
+            }
+
             var fileName = Path.GetFileName(remotePath);
             var localPath = Path.Combine(localPathFolder, fileName);
 
@@ -79,6 +99,17 @@ public class GNSSDataDownload
             {
                 await ftp.Download(remotePath, localPath);
                 Console.WriteLine($"✅ 已下载: {fileName}");
+                if (decompressGzip && localPath.EndsWith(".gz"))
+                {
+                    var decompressedFilePath = Path.Combine(localPathFolder, Path.GetFileNameWithoutExtension(fileName));
+                    Decompress.DecompressGzip(localPath, decompressedFilePath);
+                    Console.WriteLine($"   已解压: {decompressedFilePath}");
+                    if (File.Exists(decompressedFilePath) )
+                    {
+                        File.Delete(localPath); // 删除原始的.gz文件
+                        Console.WriteLine($"   已删除压缩文件: {localPath}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -88,6 +119,13 @@ public class GNSSDataDownload
         }
     }
 
+    private int GetGPSWeek(int year, int doy)
+    {
+        DateTime startDate = new DateTime(1980, 1, 6);
+        DateTime currentDate = new DateTime(year, 1, 1).AddDays(doy - 1);
+        TimeSpan timeSpan = currentDate - startDate;
+        return (int)(timeSpan.TotalDays / 7);
+    }
 }
 public class Decompress
 {
@@ -97,5 +135,9 @@ public class Decompress
         using FileStream decompressedFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write);
         using System.IO.Compression.GZipStream decompressionStream = new System.IO.Compression.GZipStream(originalFileStream, System.IO.Compression.CompressionMode.Decompress);
         decompressionStream.CopyTo(decompressedFileStream);
+    }
+    public static void DecompressCrx(string crxFilePath, string outputDirectory)
+    {
+        
     }
 }
