@@ -5,7 +5,11 @@ namespace Rtk.Download;
 
 public class GNSSDataDownload
 {
-    static readonly string ftpserver = "ftp://igs.gnsswhu.cn";
+    // static readonly string ftpserver = "ftp://igs.gnsswhu.cn";
+    static readonly string ftpserver = "ftp://gdc.cddis.eosdis.nasa.gov";
+    static  readonly string ftpuser = "anonymous";
+    static  readonly string ftppwd = "zerofreezing@outlook.com";
+    
     public GNSSDataDownload()
     {
     }

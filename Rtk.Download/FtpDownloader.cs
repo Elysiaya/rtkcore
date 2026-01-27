@@ -12,7 +12,7 @@ public class FtpDownloader:IDisposable
         ftpClient.Config.ConnectTimeout = 30000;
         ftpClient.Config.ReadTimeout = 30000;
         ftpClient.Config.SelfConnectMode = FtpSelfConnectMode.Always;
-        ftpClient.Config.EncryptionMode = FtpEncryptionMode.None;
+        ftpClient.Config.EncryptionMode = FtpEncryptionMode.Auto;
     }
     // <summary>
     /// 异步下载：输入FTP完整路径+本地保存路径，直接下载（默认匿名登录）
@@ -42,6 +42,7 @@ public class FtpDownloader:IDisposable
             catch (Exception ex)
             {
                 Console.WriteLine($"尝试 {attempt}/{maxRetries} 下载失败: {remotePath}。错误: {ex.Message}");
+                Console.WriteLine("[Inner Exception]"+ex.InnerException);
                 if (attempt == maxRetries)
                 {
                     // 这是最后一次尝试，仍然失败，所以向上抛出异常
