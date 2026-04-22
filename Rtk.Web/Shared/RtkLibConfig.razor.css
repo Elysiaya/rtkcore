@@ -13,19 +13,37 @@
 }
 
 .config-label-row {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 4px;
-    margin-bottom: 2px;
+    gap: 2px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.config-label-row :deep(.mud-typography) {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.config-grid :deep(.mud-grid-item) {
+    display: flex;
+    flex-direction: column;
+}
+
+.config-grid :deep(.mud-input-control) {
+    margin-top: 0;
 }
 
 .help-icon {
     width: 16px;
     height: 16px;
+    display: inline-flex;
+    flex-shrink: 0;
     border-radius: 50%;
     color: var(--mud-palette-primary);
     opacity: 0.9;
     cursor: help;
+    margin-top: -1px;
 }
 
 .help-icon:hover {
