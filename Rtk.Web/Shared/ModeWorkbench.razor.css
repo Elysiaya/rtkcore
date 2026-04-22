@@ -3,14 +3,16 @@
 }
 
 .page-header {
-    border: 1px solid var(--mud-palette-lines-default);
-    border-radius: 12px;
-    background: var(--mud-palette-background-grey);
+    border: 1px solid rgba(63, 81, 181, 0.16);
+    border-radius: 14px;
+    background: linear-gradient(120deg, rgba(63, 81, 181, 0.12), rgba(124, 77, 255, 0.08));
 }
 
 .panel-card {
     height: 100%;
-    border-radius: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--mud-palette-lines-default);
+    backdrop-filter: blur(2px);
 }
 
 .upload-card {
@@ -19,6 +21,13 @@
 
 .config-card {
     min-height: 560px;
+    --config-card-offset: 320px;
+}
+
+.config-card :deep(.mud-card-content) {
+    max-height: calc(100vh - var(--config-card-offset));
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
 .task-card {
@@ -43,6 +52,12 @@
     .config-card,
     .task-card {
         min-height: unset;
+    }
+
+    .config-card :deep(.mud-card-content) {
+        max-height: none;
+        overflow-y: visible;
+        padding-right: 0;
     }
 
     .task-card :deep(.mud-table-container) {

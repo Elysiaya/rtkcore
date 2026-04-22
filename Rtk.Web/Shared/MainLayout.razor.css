@@ -1,0 +1,22 @@
+:global(body) {
+    margin: 0;
+    background: linear-gradient(180deg, #f2f6ff 0%, #eef2f8 100%);
+}
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-topbar {
+    background: linear-gradient(120deg, #2d3ea8 0%, #4f46e5 55%, #7c4dff 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 18px rgba(32, 52, 130, 0.22);
+}
+
+.app-drawer {
+    border-right: 1px solid var(--mud-palette-lines-default);
+}
+
+.app-main {
+    background: transparent;
+}

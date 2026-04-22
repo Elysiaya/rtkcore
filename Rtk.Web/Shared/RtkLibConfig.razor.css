@@ -1,0 +1,33 @@
+.rtk-config-form {
+    padding-top: 4px;
+}
+
+.section-title {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.config-grid {
+    margin-top: 2px;
+}
+
+.config-label-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.help-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    color: var(--mud-palette-primary);
+    opacity: 0.9;
+    cursor: help;
+}
+
+.help-icon:hover {
+    opacity: 1;
+}

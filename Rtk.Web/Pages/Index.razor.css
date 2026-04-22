@@ -1,10 +1,11 @@
 .home-hero {
-    border: 1px solid var(--mud-palette-lines-default);
-    border-radius: 12px;
-    background: var(--mud-palette-background-grey);
+    border: 1px solid rgba(63, 81, 181, 0.16);
+    border-radius: 14px;
+    background: linear-gradient(120deg, rgba(63, 81, 181, 0.12), rgba(124, 77, 255, 0.08));
 }
 
 .home-card {
     height: 100%;
-    border-radius: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--mud-palette-lines-default);
 }
