@@ -1,0 +1,36 @@
+.home-grid {
+    align-items: stretch;
+}
+
+.panel-card {
+    height: 100%;
+}
+
+.upload-card {
+    min-height: 620px;
+}
+
+.config-card {
+    min-height: 620px;
+}
+
+.task-card {
+    min-height: 620px;
+}
+
+.task-card :deep(.mud-table-container) {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+@media (max-width: 1279.98px) {
+    .upload-card,
+    .config-card,
+    .task-card {
+        min-height: unset;
+    }
+
+    .task-card :deep(.mud-table-container) {
+        max-height: 360px;
+    }
+}

@@ -1,0 +1,45 @@
+@using LeafletForBlazor
+
+<RealTimeMap height="calc(100vh - 6rem)" width="calc(100vw - 18rem)" Parameters="@parameters"></RealTimeMap>
+
+@code {
+
+    static string key = "218c9dcec3977a580211d8dd3bf75d7e";
+    RealTimeMap.LoadParameters parameters = new RealTimeMap.LoadParameters() //general map settings
+    {
+        location = new RealTimeMap.Location()
+        {
+            latitude = 39.9,
+            longitude = 116.3,
+        },
+        zoomLevel = 18,
+
+        basemap = new RealTimeMap.Basemap()
+        {
+            basemapLayers = new List<RealTimeMap.BasemapLayer>()
+                {
+                    new RealTimeMap.BasemapLayer()
+                    {
+                        url = $"http://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={{z}}&TILEROW={{y}}&TILECOL={{x}}&tk={key}",
+                        attribution = "© 天地图",
+                        title = "天地图",
+                        detectRetina = false
+                    },
+                    new RealTimeMap.BasemapLayer()
+                    {
+                        url = $"http://t0.tianditu.gov.cn/cva_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cva&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={{z}}&TILEROW={{y}}&TILECOL={{x}}&tk={key}",
+                        attribution = "© 天地图",
+                        title = "天地图-注记",
+                        detectRetina = false
+                    },
+                    new RealTimeMap.BasemapLayer()
+                    {
+                        url = "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        attribution = "©Open Street Map",
+                        title = "Open Street Map",
+                        detectRetina = true
+                    },
+                }
+        }
+    };
+}

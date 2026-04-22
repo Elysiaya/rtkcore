@@ -1,0 +1,159 @@
+@using MudBlazor
+@inject Rtk.Web.Services.RtkLibConfigState ConfigState
+
+@using Rtk.Core
+
+<MudForm>
+    <MudTextField Value="@GetModeText()" Label="解算模式（由左侧任务类型决定）" ReadOnly="true" />
+    @if (Mode == SolutionMode.PPP)
+    {
+        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">PPP 基础参数</MudText>
+
+        <MudSelect @bind-Value="ConfigState.PPPOptions.Mode" Label="PPP 模式" Dense="true" Class="mt-2">
+            <MudSelectItem Value="@PPPMode.Kinematic">Kinematic</MudSelectItem>
+            <MudSelectItem Value="@PPPMode.Static">Static</MudSelectItem>
+            <MudSelectItem Value="@PPPMode.Fixed">Fixed</MudSelectItem>
+        </MudSelect>
+
+        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">卫星系统</MudText>
+        <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
+            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGPS" Label="GPS" />
+            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGLONASS" Label="GLONASS" />
+            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGALILEO" Label="GALILEO" />
+            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseBDS" Label="北斗" />
+        </MudStack>
+
+        <MudNumericField T="int" @bind-Value="ConfigState.PPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Class="mt-2" />
+
+        <MudExpansionPanels Class="mt-4">
+            <MudExpansionPanel Text="PPP 高级选项（按需调整）">
+                <MudSelect @bind-Value="ConfigState.PPPOptions.FilterType" Label="滤波类型" Dense="true" Class="mt-2">
+                    <MudSelectItem Value="@FilterType.Forward">Forward</MudSelectItem>
+                    <MudSelectItem Value="@FilterType.Backward">Backward</MudSelectItem>
+                    <MudSelectItem Value="@FilterType.Combined">Combined</MudSelectItem>
+                    <MudSelectItem Value="@FilterType.Combined_npr">Combined_npr</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Frequency" Label="频点" Dense="true" Class="mt-2">
+                    <MudSelectItem Value="@FreqType.L1">L1</MudSelectItem>
+                    <MudSelectItem Value="@FreqType.L1_L2">L1+L2</MudSelectItem>
+                    <MudSelectItem Value="@FreqType.L1_L2_L5">L1+L2+L5</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Iono" Label="电离层模型" Dense="true" Class="mt-2">
+                    <MudSelectItem Value="@PPPIonosphereOption.OFF">OFF</MudSelectItem>
+                    <MudSelectItem Value="@PPPIonosphereOption.IF_LC">IF_LC</MudSelectItem>
+                    <MudSelectItem Value="@PPPIonosphereOption.Estimate_STEC">Estimate_STEC</MudSelectItem>
+                    <MudSelectItem Value="@PPPIonosphereOption.IONEX_TEC">IONEX_TEC</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Trop" Label="对流层模型" Dense="true" Class="mt-2">
+                    <MudSelectItem Value="@PPPTroposphereOption.Saastamoinen">Saastamoinen</MudSelectItem>
+                    <MudSelectItem Value="@PPPTroposphereOption.Estimate_ZTD">Estimate_ZTD</MudSelectItem>
+                    <MudSelectItem Value="@PPPTroposphereOption.Estimate_ZTD_Grad">Estimate_ZTD_Grad</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Ephemeris" Label="星历类型" Dense="true" Class="mt-2">
+                    <MudSelectItem Value="@SatelliteEphemeris.Broadcast">Broadcast</MudSelectItem>
+                    <MudSelectItem Value="@SatelliteEphemeris.Precise">Precise</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect @bind-Value="ConfigState.PPPOptions.AmbiguityResolution" Label="整周模糊度" Dense="true" Class="mt-2">
+                    <MudSelectItem Value="@PPPAmbiguityResolution.OFF">OFF</MudSelectItem>
+                    <MudSelectItem Value="@PPPAmbiguityResolution.Continuous">Continuous</MudSelectItem>
+                    <MudSelectItem Value="@PPPAmbiguityResolution.Instantaneous">Instantaneous</MudSelectItem>
+                    <MudSelectItem Value="@PPPAmbiguityResolution.FixAndHold">FixAndHold</MudSelectItem>
+                </MudSelect>
+
+                <MudCheckBox @bind-Value="ConfigState.PPPOptions.OutputVelocity" Label="输出速度" Class="mt-2" />
+                <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseDynamics" Label="启用动态模型" />
+                <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseTideCorrection" Label="启用潮汐校正" />
+
+                <MudSelect @bind-Value="ConfigState.PPPOptions.TideCorrection" Label="潮汐校正类型" Dense="true" Class="mt-2"
+                           Disabled="@(!ConfigState.PPPOptions.UseTideCorrection)">
+                    <MudSelectItem Value="@TideCorrectionType.Solid">Solid</MudSelectItem>
+                    <MudSelectItem Value="@TideCorrectionType.OceanLoading">OceanLoading</MudSelectItem>
+                    <MudSelectItem Value="@TideCorrectionType.SolidAndOcean">SolidAndOcean</MudSelectItem>
+                    <MudSelectItem Value="@TideCorrectionType.Pole">Pole</MudSelectItem>
+                    <MudSelectItem Value="@TideCorrectionType.All">All</MudSelectItem>
+                </MudSelect>
+
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelH" Label="水平加速度噪声 (m/s²)" Class="mt-2" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelV" Label="垂直加速度噪声 (m/s²)" Class="mt-2" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.StdTrop" Label="对流层先验标准差 (m)" Class="mt-2" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseTrop" Label="对流层过程噪声 (m)" Class="mt-2" />
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
+    else
+    {
+        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">SPP 参数</MudText>
+        <MudText Typo="Typo.caption" Class="mb-2">RTK 模式暂未独立实现，当前使用 SPP 参数集。</MudText>
+
+        <MudText Typo="Typo.subtitle2" Class="mt-2 mb-2">卫星系统</MudText>
+        <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
+            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGPS" Label="GPS" />
+            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGLONASS" Label="GLONASS" />
+            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGALILEO" Label="GALILEO" />
+            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseBDS" Label="北斗" />
+        </MudStack>
+
+        <MudSelect @bind-Value="ConfigState.SPPOptions.FilterType" Label="滤波类型" Dense="true" Class="mt-4">
+            <MudSelectItem Value="@FilterType.Forward">Forward</MudSelectItem>
+            <MudSelectItem Value="@FilterType.Backward">Backward</MudSelectItem>
+            <MudSelectItem Value="@FilterType.Combined">Combined</MudSelectItem>
+            <MudSelectItem Value="@FilterType.Combined_npr">Combined_npr</MudSelectItem>
+        </MudSelect>
+
+        <MudSelect @bind-Value="ConfigState.SPPOptions.Frequency" Label="频点" Dense="true" Class="mt-2">
+            <MudSelectItem Value="@FreqType.L1">L1</MudSelectItem>
+            <MudSelectItem Value="@FreqType.L1_L2">L1+L2</MudSelectItem>
+            <MudSelectItem Value="@FreqType.L1_L2_L5">L1+L2+L5</MudSelectItem>
+        </MudSelect>
+
+        <MudNumericField T="int" @bind-Value="ConfigState.SPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Class="mt-2" />
+
+        <MudSelect @bind-Value="ConfigState.SPPOptions.Iono" Label="电离层模型" Dense="true" Class="mt-2">
+            <MudSelectItem Value="@IonosphereOption.OFF">OFF</MudSelectItem>
+            <MudSelectItem Value="@IonosphereOption.BroadCast">BroadCast</MudSelectItem>
+            <MudSelectItem Value="@IonosphereOption.SBAS">SBAS</MudSelectItem>
+            <MudSelectItem Value="@IonosphereOption.IF_LC">IF_LC</MudSelectItem>
+            <MudSelectItem Value="@IonosphereOption.Estimate_STEC">Estimate_STEC</MudSelectItem>
+            <MudSelectItem Value="@IonosphereOption.IONEX_TEC">IONEX_TEC</MudSelectItem>
+            <MudSelectItem Value="@IonosphereOption.QZSS_BroadCast">QZSS_BroadCast</MudSelectItem>
+        </MudSelect>
+
+        <MudSelect @bind-Value="ConfigState.SPPOptions.Trop" Label="对流层模型" Dense="true" Class="mt-2">
+            <MudSelectItem Value="@TroposphereOption.OFF">OFF</MudSelectItem>
+            <MudSelectItem Value="@TroposphereOption.Saastamoinen">Saastamoinen</MudSelectItem>
+            <MudSelectItem Value="@TroposphereOption.SBAS">SBAS</MudSelectItem>
+            <MudSelectItem Value="@TroposphereOption.Estimate_ZTD">Estimate_ZTD</MudSelectItem>
+            <MudSelectItem Value="@TroposphereOption.Estimate_ZTD_Grad">Estimate_ZTD_Grad</MudSelectItem>
+        </MudSelect>
+
+        <MudSelect @bind-Value="ConfigState.SPPOptions.Ephemeris" Label="星历类型" Dense="true" Class="mt-2">
+            <MudSelectItem Value="@SatelliteEphemeris.Broadcast">Broadcast</MudSelectItem>
+            <MudSelectItem Value="@SatelliteEphemeris.Precise">Precise</MudSelectItem>
+        </MudSelect>
+    }
+</MudForm>
+
+@code {
+    [Parameter]
+    public SolutionMode Mode { get; set; } = SolutionMode.SPP;
+
+    protected override void OnParametersSet()
+    {
+        ConfigState.SPPOptions.SolutionMode = Mode;
+    }
+
+    private string GetModeText()
+    {
+        return Mode switch
+        {
+            SolutionMode.PPP => "精密单点定位（PPP）",
+            SolutionMode.RTK => "实时动态定位（RTK）",
+            _ => "单点定位（SPP）"
+        };
+    }
+}

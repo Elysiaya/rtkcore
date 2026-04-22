@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Rtk.Core/Rtk.Core.csproj" />
+  <Project Path="Rtk.Download/Rtk.Download.csproj" />
+  <Project Path="Rtk.TestConsole/Rtk.TestConsole.csproj" />
+  <Project Path="Rtk.Web/Rtk.Web.csproj" />
+</Solution>
