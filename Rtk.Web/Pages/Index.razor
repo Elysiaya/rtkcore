@@ -3,6 +3,13 @@
 @inject RtkQueueService QueueService
 @inject RtkLibConfigState ConfigState
 
+<MudPaper Elevation="0" Class="page-header pa-4 mb-4">
+    <MudText Typo="Typo.h3" HtmlTag="h1">RTK 解算工作台</MudText>
+    <MudText Typo="Typo.body2" Class="mt-1">
+        先上传观测文件并设置参数，再在任务队列中查看实时状态并下载结果。
+    </MudText>
+</MudPaper>
+
 <MudGrid Spacing="3" Class="home-grid">
     @* 文件上传界面 *@
     <MudItem xs="12" lg="4" xl="3">
@@ -10,6 +17,7 @@
             <MudCardHeader>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">新建任务</MudText>
+                    <MudText Typo="Typo.caption" Class="d-block">支持 SPP / PPP 两种模式</MudText>
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent Class="pt-0">
@@ -161,4 +169,3 @@
         ConfigState.SPPOptions.SolutionMode = CurrentMode;
     }
 }
-
