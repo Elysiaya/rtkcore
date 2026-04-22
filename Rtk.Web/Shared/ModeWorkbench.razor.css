@@ -21,10 +21,11 @@
 
 .config-card {
     min-height: 560px;
+    --config-card-offset: 320px;
 }
 
 .config-card :deep(.mud-card-content) {
-    max-height: calc(100vh - 320px);
+    max-height: calc(100vh - var(--config-card-offset));
     overflow-y: auto;
     padding-right: 8px;
 }

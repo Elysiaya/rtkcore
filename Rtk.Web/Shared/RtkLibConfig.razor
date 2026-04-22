@@ -8,7 +8,6 @@
                   Label="解算模式（由左侧任务类型决定）"
                   ReadOnly="true"
                   Variant="Variant.Outlined"
-                  Dense="true"
                   Margin="Margin.Dense" />
 
     @if (Mode == SolutionMode.PPP)
@@ -37,7 +36,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField T="int" @bind-Value="ConfigState.PPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+                <MudNumericField T="int" @bind-Value="ConfigState.PPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Margin="Margin.Dense" Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
@@ -144,11 +143,11 @@
                         <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
                     </MudTooltip>
                 </div>
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelH" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelH" Margin="Margin.Dense" Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelV" Label="垂直加速度噪声 (m/s²)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelV" Label="垂直加速度噪声 (m/s²)" Margin="Margin.Dense" Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
@@ -158,11 +157,11 @@
                         <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
                     </MudTooltip>
                 </div>
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.StdTrop" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.StdTrop" Margin="Margin.Dense" Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseTrop" Label="对流层过程噪声 (m)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseTrop" Label="对流层过程噪声 (m)" Margin="Margin.Dense" Variant="Variant.Outlined" />
             </MudItem>
         </MudGrid>
     }
@@ -208,7 +207,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField T="int" @bind-Value="ConfigState.SPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+                <MudNumericField T="int" @bind-Value="ConfigState.SPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Margin="Margin.Dense" Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
