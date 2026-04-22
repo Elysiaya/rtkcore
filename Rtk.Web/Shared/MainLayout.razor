@@ -1,13 +1,13 @@
 @inherits LayoutComponentBase
 @using MudBlazor
 
-<MudThemeProvider IsDarkMode="@_isDarkMode" />
+<MudThemeProvider Theme="_modernTheme" IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-<MudLayout>
-    <MudAppBar Elevation="1">
+<MudLayout Class="app-shell">
+    <MudAppBar Elevation="0" Class="app-topbar">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
         <MudText Typo="Typo.h5" Class="ml-3">🛰️ RTKLib 云解算平台</MudText>
         <MudSpacer />
@@ -18,15 +18,15 @@
                 OnClick="ToggleTheme" />
         </MudTooltip>
     </MudAppBar>
-    <MudDrawer Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
+    <MudDrawer Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0" Variant="DrawerVariant.Responsive" Class="app-drawer">
         <MudNavMenu>
             <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">首页</MudNavLink>
             <MudNavLink Href="/spp" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.GpsFixed">SPP</MudNavLink>
             <MudNavLink Href="/ppp" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Public">PPP</MudNavLink>
         </MudNavMenu>
     </MudDrawer>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudMainContent Class="app-main">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-6">
             @Body
         </MudContainer>
     </MudMainContent>
@@ -35,6 +35,37 @@
 @code {
     private bool _isDarkMode;
     private bool _drawerOpen = true;
+    private readonly MudTheme _modernTheme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#3f51b5",
+            Secondary = "#7c4dff",
+            Background = "#f4f7fb",
+            Surface = "#ffffff",
+            AppbarBackground = "#2d3ea8",
+            AppbarText = "#ffffff",
+            DrawerBackground = "#ffffff",
+            DrawerText = "#1d2436",
+            DrawerIcon = "#58627a"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#90caf9",
+            Secondary = "#b39ddb",
+            Background = "#111827",
+            Surface = "#1c2536",
+            AppbarBackground = "#111827",
+            AppbarText = "#f8fafc",
+            DrawerBackground = "#0f172a",
+            DrawerText = "#d6deeb",
+            DrawerIcon = "#93a4c4"
+        },
+        LayoutProperties = new LayoutProperties
+        {
+            DefaultBorderRadius = "12px"
+        }
+    };
 
     private void ToggleTheme()
     {

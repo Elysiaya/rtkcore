@@ -3,73 +3,131 @@
 
 @using Rtk.Core
 
-<MudForm>
-    <MudTextField Value="@GetModeText()" Label="解算模式（由左侧任务类型决定）" ReadOnly="true" />
+<MudForm Class="rtk-config-form">
+    <MudTextField Value="@GetModeText()"
+                  Label="解算模式（由左侧任务类型决定）"
+                  ReadOnly="true"
+                  Variant="Variant.Outlined"
+                  Dense="true"
+                  Margin="Margin.Dense" />
+
     @if (Mode == SolutionMode.PPP)
     {
-        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">PPP 基础参数</MudText>
+        <MudText Typo="Typo.subtitle2" Class="section-title">PPP 参数设置</MudText>
 
-        <MudSelect @bind-Value="ConfigState.PPPOptions.Mode" Label="PPP 模式" Dense="true" Class="mt-2">
-            <MudSelectItem Value="@PPPMode.Kinematic">Kinematic</MudSelectItem>
-            <MudSelectItem Value="@PPPMode.Static">Static</MudSelectItem>
-            <MudSelectItem Value="@PPPMode.Fixed">Fixed</MudSelectItem>
-        </MudSelect>
+        <MudGrid Spacing="2" Class="config-grid">
+            <MudItem xs="12">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">卫星系统</MudText>
+                </div>
+                <MudStack Row="true" Spacing="3" Wrap="Wrap.Wrap">
+                    <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGPS" Label="GPS" Dense="true" />
+                    <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGLONASS" Label="GLONASS" Dense="true" />
+                    <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGALILEO" Label="GALILEO" Dense="true" />
+                    <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseBDS" Label="北斗" Dense="true" />
+                </MudStack>
+            </MudItem>
 
-        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">卫星系统</MudText>
-        <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
-            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGPS" Label="GPS" />
-            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGLONASS" Label="GLONASS" />
-            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseGALILEO" Label="GALILEO" />
-            <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseBDS" Label="北斗" />
-        </MudStack>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Mode" Label="PPP 模式" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@PPPMode.Kinematic">Kinematic</MudSelectItem>
+                    <MudSelectItem Value="@PPPMode.Static">Static</MudSelectItem>
+                    <MudSelectItem Value="@PPPMode.Fixed">Fixed</MudSelectItem>
+                </MudSelect>
+            </MudItem>
 
-        <MudNumericField T="int" @bind-Value="ConfigState.PPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Class="mt-2" />
+            <MudItem xs="12" md="6">
+                <MudNumericField T="int" @bind-Value="ConfigState.PPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+            </MudItem>
 
-        <MudExpansionPanels Class="mt-4">
-            <MudExpansionPanel Text="PPP 高级选项（按需调整）">
-                <MudSelect @bind-Value="ConfigState.PPPOptions.FilterType" Label="滤波类型" Dense="true" Class="mt-2">
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">滤波类型</MudText>
+                    <MudTooltip Text="Forward 为前向解算；Backward 为后向；Combined 为前后向联合，通常精度更好。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.PPPOptions.FilterType" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
                     <MudSelectItem Value="@FilterType.Forward">Forward</MudSelectItem>
                     <MudSelectItem Value="@FilterType.Backward">Backward</MudSelectItem>
                     <MudSelectItem Value="@FilterType.Combined">Combined</MudSelectItem>
                     <MudSelectItem Value="@FilterType.Combined_npr">Combined_npr</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudSelect @bind-Value="ConfigState.PPPOptions.Frequency" Label="频点" Dense="true" Class="mt-2">
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Frequency" Label="频点" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
                     <MudSelectItem Value="@FreqType.L1">L1</MudSelectItem>
                     <MudSelectItem Value="@FreqType.L1_L2">L1+L2</MudSelectItem>
                     <MudSelectItem Value="@FreqType.L1_L2_L5">L1+L2+L5</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudSelect @bind-Value="ConfigState.PPPOptions.Iono" Label="电离层模型" Dense="true" Class="mt-2">
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">电离层模型</MudText>
+                    <MudTooltip Text="IF_LC 为无电离层组合；Estimate_STEC 估计斜电离层延迟；IONEX_TEC 使用外部全球电离层模型。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Iono" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
                     <MudSelectItem Value="@PPPIonosphereOption.OFF">OFF</MudSelectItem>
                     <MudSelectItem Value="@PPPIonosphereOption.IF_LC">IF_LC</MudSelectItem>
                     <MudSelectItem Value="@PPPIonosphereOption.Estimate_STEC">Estimate_STEC</MudSelectItem>
                     <MudSelectItem Value="@PPPIonosphereOption.IONEX_TEC">IONEX_TEC</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudSelect @bind-Value="ConfigState.PPPOptions.Trop" Label="对流层模型" Dense="true" Class="mt-2">
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">对流层模型</MudText>
+                    <MudTooltip Text="Saastamoinen 为经验模型；Estimate_ZTD / Grad 会联合估计湿延迟，精度更高但收敛更慢。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Trop" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
                     <MudSelectItem Value="@PPPTroposphereOption.Saastamoinen">Saastamoinen</MudSelectItem>
                     <MudSelectItem Value="@PPPTroposphereOption.Estimate_ZTD">Estimate_ZTD</MudSelectItem>
                     <MudSelectItem Value="@PPPTroposphereOption.Estimate_ZTD_Grad">Estimate_ZTD_Grad</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudSelect @bind-Value="ConfigState.PPPOptions.Ephemeris" Label="星历类型" Dense="true" Class="mt-2">
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="ConfigState.PPPOptions.Ephemeris" Label="星历类型" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
                     <MudSelectItem Value="@SatelliteEphemeris.Broadcast">Broadcast</MudSelectItem>
                     <MudSelectItem Value="@SatelliteEphemeris.Precise">Precise</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudSelect @bind-Value="ConfigState.PPPOptions.AmbiguityResolution" Label="整周模糊度" Dense="true" Class="mt-2">
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">整周模糊度</MudText>
+                    <MudTooltip Text="Continuous 会持续尝试固定模糊度；Instantaneous 为历元独立固定；FixAndHold 会固定后保持。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.PPPOptions.AmbiguityResolution" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
                     <MudSelectItem Value="@PPPAmbiguityResolution.OFF">OFF</MudSelectItem>
                     <MudSelectItem Value="@PPPAmbiguityResolution.Continuous">Continuous</MudSelectItem>
                     <MudSelectItem Value="@PPPAmbiguityResolution.Instantaneous">Instantaneous</MudSelectItem>
                     <MudSelectItem Value="@PPPAmbiguityResolution.FixAndHold">FixAndHold</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudCheckBox @bind-Value="ConfigState.PPPOptions.OutputVelocity" Label="输出速度" Class="mt-2" />
-                <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseDynamics" Label="启用动态模型" />
-                <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseTideCorrection" Label="启用潮汐校正" />
+            <MudItem xs="12" md="6">
+                <MudCheckBox @bind-Value="ConfigState.PPPOptions.OutputVelocity" Label="输出速度" Dense="true" />
+                <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseDynamics" Label="启用动态模型" Dense="true" />
+                <MudCheckBox @bind-Value="ConfigState.PPPOptions.UseTideCorrection" Label="启用潮汐校正" Dense="true" />
+            </MudItem>
 
-                <MudSelect @bind-Value="ConfigState.PPPOptions.TideCorrection" Label="潮汐校正类型" Dense="true" Class="mt-2"
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">潮汐校正类型</MudText>
+                    <MudTooltip Text="Solid 为固体潮；OceanLoading 为海潮负荷；All 包含全部改正项。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.PPPOptions.TideCorrection" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
                            Disabled="@(!ConfigState.PPPOptions.UseTideCorrection)">
                     <MudSelectItem Value="@TideCorrectionType.Solid">Solid</MudSelectItem>
                     <MudSelectItem Value="@TideCorrectionType.OceanLoading">OceanLoading</MudSelectItem>
@@ -77,64 +135,123 @@
                     <MudSelectItem Value="@TideCorrectionType.Pole">Pole</MudSelectItem>
                     <MudSelectItem Value="@TideCorrectionType.All">All</MudSelectItem>
                 </MudSelect>
+            </MudItem>
 
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelH" Label="水平加速度噪声 (m/s²)" Class="mt-2" />
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelV" Label="垂直加速度噪声 (m/s²)" Class="mt-2" />
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.StdTrop" Label="对流层先验标准差 (m)" Class="mt-2" />
-                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseTrop" Label="对流层过程噪声 (m)" Class="mt-2" />
-            </MudExpansionPanel>
-        </MudExpansionPanels>
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">水平加速度噪声 (m/s²)</MudText>
+                    <MudTooltip Text="过程噪声越大，滤波器对机动变化更敏感，但轨迹会更抖动。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelH" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseAccelV" Label="垂直加速度噪声 (m/s²)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">对流层先验标准差 (m)</MudText>
+                    <MudTooltip Text="用于约束初始对流层参数，不合理过大/过小都会影响收敛。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.StdTrop" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="double" @bind-Value="ConfigState.PPPOptions.ProcessNoiseTrop" Label="对流层过程噪声 (m)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
     }
     else
     {
-        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">SPP 参数</MudText>
+        <MudText Typo="Typo.subtitle2" Class="section-title">SPP 参数设置</MudText>
         <MudText Typo="Typo.caption" Class="mb-2">RTK 模式暂未独立实现，当前使用 SPP 参数集。</MudText>
 
-        <MudText Typo="Typo.subtitle2" Class="mt-2 mb-2">卫星系统</MudText>
-        <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
-            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGPS" Label="GPS" />
-            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGLONASS" Label="GLONASS" />
-            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGALILEO" Label="GALILEO" />
-            <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseBDS" Label="北斗" />
-        </MudStack>
+        <MudGrid Spacing="2" Class="config-grid">
+            <MudItem xs="12">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">卫星系统</MudText>
+                </div>
+                <MudStack Row="true" Spacing="3" Wrap="Wrap.Wrap">
+                    <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGPS" Label="GPS" Dense="true" />
+                    <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGLONASS" Label="GLONASS" Dense="true" />
+                    <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseGALILEO" Label="GALILEO" Dense="true" />
+                    <MudCheckBox @bind-Value="ConfigState.SPPOptions.UseBDS" Label="北斗" Dense="true" />
+                </MudStack>
+            </MudItem>
 
-        <MudSelect @bind-Value="ConfigState.SPPOptions.FilterType" Label="滤波类型" Dense="true" Class="mt-4">
-            <MudSelectItem Value="@FilterType.Forward">Forward</MudSelectItem>
-            <MudSelectItem Value="@FilterType.Backward">Backward</MudSelectItem>
-            <MudSelectItem Value="@FilterType.Combined">Combined</MudSelectItem>
-            <MudSelectItem Value="@FilterType.Combined_npr">Combined_npr</MudSelectItem>
-        </MudSelect>
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">滤波类型</MudText>
+                    <MudTooltip Text="Forward 为前向解算；Backward 为后向；Combined 为前后向联合。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.SPPOptions.FilterType" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@FilterType.Forward">Forward</MudSelectItem>
+                    <MudSelectItem Value="@FilterType.Backward">Backward</MudSelectItem>
+                    <MudSelectItem Value="@FilterType.Combined">Combined</MudSelectItem>
+                    <MudSelectItem Value="@FilterType.Combined_npr">Combined_npr</MudSelectItem>
+                </MudSelect>
+            </MudItem>
 
-        <MudSelect @bind-Value="ConfigState.SPPOptions.Frequency" Label="频点" Dense="true" Class="mt-2">
-            <MudSelectItem Value="@FreqType.L1">L1</MudSelectItem>
-            <MudSelectItem Value="@FreqType.L1_L2">L1+L2</MudSelectItem>
-            <MudSelectItem Value="@FreqType.L1_L2_L5">L1+L2+L5</MudSelectItem>
-        </MudSelect>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="ConfigState.SPPOptions.Frequency" Label="频点" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@FreqType.L1">L1</MudSelectItem>
+                    <MudSelectItem Value="@FreqType.L1_L2">L1+L2</MudSelectItem>
+                    <MudSelectItem Value="@FreqType.L1_L2_L5">L1+L2+L5</MudSelectItem>
+                </MudSelect>
+            </MudItem>
 
-        <MudNumericField T="int" @bind-Value="ConfigState.SPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Class="mt-2" />
+            <MudItem xs="12" md="6">
+                <MudNumericField T="int" @bind-Value="ConfigState.SPPOptions.ElevationMaskDeg" Label="高度截止角(°)" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" />
+            </MudItem>
 
-        <MudSelect @bind-Value="ConfigState.SPPOptions.Iono" Label="电离层模型" Dense="true" Class="mt-2">
-            <MudSelectItem Value="@IonosphereOption.OFF">OFF</MudSelectItem>
-            <MudSelectItem Value="@IonosphereOption.BroadCast">BroadCast</MudSelectItem>
-            <MudSelectItem Value="@IonosphereOption.SBAS">SBAS</MudSelectItem>
-            <MudSelectItem Value="@IonosphereOption.IF_LC">IF_LC</MudSelectItem>
-            <MudSelectItem Value="@IonosphereOption.Estimate_STEC">Estimate_STEC</MudSelectItem>
-            <MudSelectItem Value="@IonosphereOption.IONEX_TEC">IONEX_TEC</MudSelectItem>
-            <MudSelectItem Value="@IonosphereOption.QZSS_BroadCast">QZSS_BroadCast</MudSelectItem>
-        </MudSelect>
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">电离层模型</MudText>
+                    <MudTooltip Text="BroadCast/SBAS 使用广播模型；IF_LC 为无电离层组合；IONEX_TEC 使用外部格网产品。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.SPPOptions.Iono" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@IonosphereOption.OFF">OFF</MudSelectItem>
+                    <MudSelectItem Value="@IonosphereOption.BroadCast">BroadCast</MudSelectItem>
+                    <MudSelectItem Value="@IonosphereOption.SBAS">SBAS</MudSelectItem>
+                    <MudSelectItem Value="@IonosphereOption.IF_LC">IF_LC</MudSelectItem>
+                    <MudSelectItem Value="@IonosphereOption.Estimate_STEC">Estimate_STEC</MudSelectItem>
+                    <MudSelectItem Value="@IonosphereOption.IONEX_TEC">IONEX_TEC</MudSelectItem>
+                    <MudSelectItem Value="@IonosphereOption.QZSS_BroadCast">QZSS_BroadCast</MudSelectItem>
+                </MudSelect>
+            </MudItem>
 
-        <MudSelect @bind-Value="ConfigState.SPPOptions.Trop" Label="对流层模型" Dense="true" Class="mt-2">
-            <MudSelectItem Value="@TroposphereOption.OFF">OFF</MudSelectItem>
-            <MudSelectItem Value="@TroposphereOption.Saastamoinen">Saastamoinen</MudSelectItem>
-            <MudSelectItem Value="@TroposphereOption.SBAS">SBAS</MudSelectItem>
-            <MudSelectItem Value="@TroposphereOption.Estimate_ZTD">Estimate_ZTD</MudSelectItem>
-            <MudSelectItem Value="@TroposphereOption.Estimate_ZTD_Grad">Estimate_ZTD_Grad</MudSelectItem>
-        </MudSelect>
+            <MudItem xs="12" md="6">
+                <div class="config-label-row">
+                    <MudText Typo="Typo.body2">对流层模型</MudText>
+                    <MudTooltip Text="Saastamoinen 为经验模型；Estimate_ZTD / Grad 会估计对流层参数。">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="help-icon" Size="Size.Small" />
+                    </MudTooltip>
+                </div>
+                <MudSelect @bind-Value="ConfigState.SPPOptions.Trop" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@TroposphereOption.OFF">OFF</MudSelectItem>
+                    <MudSelectItem Value="@TroposphereOption.Saastamoinen">Saastamoinen</MudSelectItem>
+                    <MudSelectItem Value="@TroposphereOption.SBAS">SBAS</MudSelectItem>
+                    <MudSelectItem Value="@TroposphereOption.Estimate_ZTD">Estimate_ZTD</MudSelectItem>
+                    <MudSelectItem Value="@TroposphereOption.Estimate_ZTD_Grad">Estimate_ZTD_Grad</MudSelectItem>
+                </MudSelect>
+            </MudItem>
 
-        <MudSelect @bind-Value="ConfigState.SPPOptions.Ephemeris" Label="星历类型" Dense="true" Class="mt-2">
-            <MudSelectItem Value="@SatelliteEphemeris.Broadcast">Broadcast</MudSelectItem>
-            <MudSelectItem Value="@SatelliteEphemeris.Precise">Precise</MudSelectItem>
-        </MudSelect>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="ConfigState.SPPOptions.Ephemeris" Label="星历类型" Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@SatelliteEphemeris.Broadcast">Broadcast</MudSelectItem>
+                    <MudSelectItem Value="@SatelliteEphemeris.Precise">Precise</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
     }
 </MudForm>
 
