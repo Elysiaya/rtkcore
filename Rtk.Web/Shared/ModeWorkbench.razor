@@ -1,0 +1,160 @@
+@inject ISnackbar Snackbar
+@inject RtkQueueService QueueService
+@inject RtkLibConfigState ConfigState
+@using Rtk.Core
+
+<MudPaper Elevation="0" Class="page-header pa-4 mb-4">
+    <MudText Typo="Typo.h3" HtmlTag="h1">@($"{ModeTitle} 解算工作台")</MudText>
+    <MudText Typo="Typo.body2" Class="mt-1">
+        先上传观测文件并设置参数，再在任务队列中查看实时状态并下载结果。
+    </MudText>
+</MudPaper>
+
+<MudGrid Spacing="3" Class="workbench-grid">
+    <MudItem xs="12" lg="4" xl="3">
+        <MudCard Elevation="3" Class="panel-card upload-card">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">新建任务</MudText>
+                    <MudText Typo="Typo.caption" Class="d-block">@($"{ModeTitle} 模式")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent Class="pt-0">
+                @if (Mode == SolutionMode.PPP)
+                {
+                    <Ppp OnTaskSubmitted="HandleTaskSubmitted" />
+                }
+                else
+                {
+                    <Spp OnTaskSubmitted="HandleTaskSubmitted" />
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" lg="5" xl="5">
+        <MudCard Elevation="2" Class="panel-card config-card">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">解算参数</MudText>
+                    <MudText Typo="Typo.caption" Class="d-block">基础参数常用，高级参数按需展开</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent Class="pt-0">
+                <RtkLibConfig Mode="@Mode" />
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" lg="3" xl="4">
+        <MudCard Elevation="2" Class="panel-card task-card">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">任务队列</MudText>
+                    <MudText Typo="Typo.caption" Class="d-block">实时显示排队和执行状态</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent Class="pt-0">
+                <MudTable Items="@_tasks" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+                    <HeaderContent>
+                        <MudTh>任务 ID</MudTh>
+                        <MudTh>状态</MudTh>
+                        <MudTh>操作</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="ID">@context.TaskId.Substring(0, 8)...</MudTd>
+                        <MudTd DataLabel="状态">
+                            <MudChip T="String" Color="@GetStatusColor(context.Status)" Size="Size.Small">@GetStatusText(context.Status)</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="操作">
+                            @if (context.IsCompleted)
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                           Href="@($"/api/rtk/download/{context.TaskId}")" Target="_blank">
+                                    下载结果
+                                </MudButton>
+                            }
+                            else if (context.Status is RtkTaskStatus.Failed or RtkTaskStatus.TimedOut)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Error">@(string.IsNullOrWhiteSpace(context.Error) ? "请查看服务日志" : context.Error)</MudText>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private readonly List<TaskViewModel> _tasks = new();
+
+    [Parameter]
+    public SolutionMode Mode { get; set; } = SolutionMode.SPP;
+
+    private string ModeTitle => Mode == SolutionMode.PPP ? "PPP" : "SPP";
+
+    protected override void OnParametersSet()
+    {
+        ConfigState.SPPOptions.SolutionMode = Mode;
+    }
+
+    private void HandleTaskSubmitted(TaskViewModel newTask)
+    {
+        _tasks.Insert(0, newTask);
+        _ = CheckStatus(newTask);
+    }
+
+    private async Task CheckStatus(TaskViewModel task)
+    {
+        while (task.Status is RtkTaskStatus.Queued or RtkTaskStatus.Running)
+        {
+            await Task.Delay(1000);
+            var state = QueueService.GetTaskState(task.TaskId);
+            if (state is null)
+            {
+                break;
+            }
+
+            task.Status = state.Status;
+            task.IsCompleted = state.Status == RtkTaskStatus.Completed;
+            task.Error = state.Error;
+
+            await InvokeAsync(StateHasChanged);
+            if (state.Status == RtkTaskStatus.Completed)
+            {
+                Snackbar.Add("任务已完成！", Severity.Success);
+            }
+            else if (state.Status is RtkTaskStatus.Failed or RtkTaskStatus.TimedOut)
+            {
+                Snackbar.Add($"任务失败：{state.Error}", Severity.Error);
+            }
+        }
+    }
+
+    private static Color GetStatusColor(RtkTaskStatus status)
+    {
+        return status switch
+        {
+            RtkTaskStatus.Queued => Color.Info,
+            RtkTaskStatus.Running => Color.Warning,
+            RtkTaskStatus.Completed => Color.Success,
+            RtkTaskStatus.Failed => Color.Error,
+            RtkTaskStatus.TimedOut => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private static string GetStatusText(RtkTaskStatus status)
+    {
+        return status switch
+        {
+            RtkTaskStatus.Queued => "排队中",
+            RtkTaskStatus.Running => "处理中",
+            RtkTaskStatus.Completed => "完成",
+            RtkTaskStatus.Failed => "失败",
+            RtkTaskStatus.TimedOut => "超时",
+            _ => "未知"
+        };
+    }
+}
