@@ -39,11 +39,11 @@
     height: 16px;
     display: inline-flex;
     flex-shrink: 0;
+    align-self: center;
     border-radius: 50%;
     color: var(--mud-palette-primary);
     opacity: 0.9;
     cursor: help;
-    margin-top: -1px;
 }
 
 .help-icon:hover {
