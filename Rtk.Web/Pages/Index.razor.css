@@ -35,6 +35,7 @@
     top: 0;
     z-index: 1;
     background: var(--mud-palette-surface);
+    box-shadow: 0 1px 0 var(--mud-palette-lines-default);
 }
 
 @media (max-width: 1279.98px) {
