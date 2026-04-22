@@ -1,51 +1,10 @@
-.home-grid {
-    align-items: stretch;
-}
-
-.page-header {
+.home-hero {
     border: 1px solid var(--mud-palette-lines-default);
     border-radius: 12px;
     background: var(--mud-palette-background-grey);
 }
 
-.panel-card {
+.home-card {
     height: 100%;
     border-radius: 12px;
-}
-
-.upload-card {
-    min-height: 560px;
-}
-
-.config-card {
-    min-height: 560px;
-}
-
-.task-card {
-    min-height: 420px;
-}
-
-.task-card :deep(.mud-table-container) {
-    max-height: 460px;
-    overflow-y: auto;
-}
-
-.task-card :deep(.mud-table-head) {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--mud-palette-surface);
-    box-shadow: 0 1px 0 var(--mud-palette-lines-default);
-}
-
-@media (max-width: 1279.98px) {
-    .upload-card,
-    .config-card,
-    .task-card {
-        min-height: unset;
-    }
-
-    .task-card :deep(.mud-table-container) {
-        max-height: 320px;
-    }
 }

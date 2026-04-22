@@ -8,6 +8,7 @@
 
 <MudLayout>
     <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
         <MudText Typo="Typo.h5" Class="ml-3">🛰️ RTKLib 云解算平台</MudText>
         <MudSpacer />
         <MudTooltip Text="@(_isDarkMode ? "切换为浅色模式" : "切换为深色模式")">
@@ -17,6 +18,13 @@
                 OnClick="ToggleTheme" />
         </MudTooltip>
     </MudAppBar>
+    <MudDrawer Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">首页</MudNavLink>
+            <MudNavLink Href="/spp" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.GpsFixed">SPP</MudNavLink>
+            <MudNavLink Href="/ppp" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Public">PPP</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
             @Body
@@ -26,9 +34,15 @@
 
 @code {
     private bool _isDarkMode;
+    private bool _drawerOpen = true;
 
     private void ToggleTheme()
     {
         _isDarkMode = !_isDarkMode;
+    }
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
     }
 }

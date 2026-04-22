@@ -1,171 +1,42 @@
 @page "/"
-@inject ISnackbar Snackbar
-@inject RtkQueueService QueueService
-@inject RtkLibConfigState ConfigState
-
-<MudPaper Elevation="0" Class="page-header pa-4 mb-4">
-    <MudText Typo="Typo.h3" HtmlTag="h1">RTK 解算工作台</MudText>
-    <MudText Typo="Typo.body2" Class="mt-1">
-        先上传观测文件并设置参数，再在任务队列中查看实时状态并下载结果。
+<MudPaper Elevation="0" Class="home-hero pa-6 mb-4">
+    <MudText Typo="Typo.h3" HtmlTag="h1">首页</MudText>
+    <MudText Typo="Typo.body1" Class="mt-2">
+        欢迎使用 RTK 解算平台，请通过左侧菜单进入 SPP 或 PPP 页面开始任务。
     </MudText>
 </MudPaper>
 
-<MudGrid Spacing="3" Class="home-grid">
-    @* 文件上传界面 *@
-    <MudItem xs="12" lg="4" xl="3">
-        <MudCard Elevation="3" Class="panel-card upload-card">
+<MudGrid Spacing="3">
+    <MudItem xs="12" md="6">
+        <MudCard Class="home-card" Elevation="2">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">新建任务</MudText>
-                    <MudText Typo="Typo.caption" Class="d-block">支持 SPP / PPP 两种模式</MudText>
+                    <MudText Typo="Typo.h6">SPP 页面</MudText>
+                    <MudText Typo="Typo.caption">单点定位工作台</MudText>
                 </CardHeaderContent>
             </MudCardHeader>
-            <MudCardContent Class="pt-0">
-                <MudTabs ActivePanelIndex="@_tabIndex" ActivePanelIndexChanged="OnTabChanged" Style="min-height:20px;padding-top:2px;padding-bottom:2px;">
-                    <MudTabPanel Text="SPP" Class="pt-6">
-                        <Spp OnTaskSubmitted="HandleTaskSubmitted" />
-                    </MudTabPanel>
-                    <MudTabPanel Text="PPP" Class="pt-6">
-                        <Ppp OnTaskSubmitted="HandleTaskSubmitted" />
-                    </MudTabPanel>
-                </MudTabs>
+            <MudCardContent>
+                <MudText Typo="Typo.body2">上传观测/导航数据，配置 SPP 参数并提交任务。</MudText>
             </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/spp">进入 SPP</MudButton>
+            </MudCardActions>
         </MudCard>
     </MudItem>
-    @* 设置界面 *@
-    <MudItem xs="12" lg="5" xl="5">
-        <MudCard Elevation="2" Class="panel-card config-card">
+    <MudItem xs="12" md="6">
+        <MudCard Class="home-card" Elevation="2">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">解算参数</MudText>
-                    <MudText Typo="Typo.caption" Class="d-block">基础参数常用，高级参数按需展开</MudText>
+                    <MudText Typo="Typo.h6">PPP 页面</MudText>
+                    <MudText Typo="Typo.caption">精密单点定位工作台</MudText>
                 </CardHeaderContent>
             </MudCardHeader>
-            <MudCardContent Class="pt-0">
-                <RtkLibConfig Mode="@CurrentMode" />
+            <MudCardContent>
+                <MudText Typo="Typo.body2">上传精密产品文件，配置 PPP 参数并提交任务。</MudText>
             </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/ppp">进入 PPP</MudButton>
+            </MudCardActions>
         </MudCard>
     </MudItem>
-    @* 任务列表界面 *@
-    <MudItem xs="12" lg="3" xl="4">
-        <MudCard Elevation="2" Class="panel-card task-card">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">任务队列</MudText>
-                    <MudText Typo="Typo.caption" Class="d-block">实时显示排队和执行状态</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent Class="pt-0">
-                <MudTable Items="@_tasks" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
-                    <HeaderContent>
-                        <MudTh>任务 ID</MudTh>
-                        <MudTh>状态</MudTh>
-                        <MudTh>操作</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="ID">@context.TaskId.Substring(0, 8)...</MudTd>
-                        <MudTd DataLabel="状态">
-                            <MudChip T="String" Color="@GetStatusColor(context.Status)" Size="Size.Small">@GetStatusText(context.Status)</MudChip>
-                        </MudTd>
-                        <MudTd DataLabel="操作">
-                            @if (context.IsCompleted)
-                            {
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                    Href="@($"/api/rtk/download/{context.TaskId}")" Target="_blank">
-                                    下载结果
-                                </MudButton>
-                            }
-                            else if (context.Status is RtkTaskStatus.Failed or RtkTaskStatus.TimedOut)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Error">@(string.IsNullOrWhiteSpace(context.Error) ? "请查看服务日志" : context.Error)</MudText>
-                            }
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-    @* <MudItem xs="12" md="12">
-        <Map />
-    </MudItem> *@
 </MudGrid>
-
-@code {
-    private List<TaskViewModel> _tasks = new();
-    private int _tabIndex = 0;
-    private SolutionMode CurrentMode => _tabIndex == 1 ? SolutionMode.PPP : SolutionMode.SPP;
-
-    protected override void OnInitialized()
-    {
-        SyncModeFromTab();
-    }
-
-    private void OnTabChanged(int panelIndex)
-    {
-        _tabIndex = panelIndex;
-        SyncModeFromTab();
-    }
-
-    private void HandleTaskSubmitted(TaskViewModel newTask)
-    {
-        _tasks.Insert(0, newTask);
-        _ = CheckStatus(newTask);
-    }
-    private async Task CheckStatus(TaskViewModel task)
-    {
-        while (task.Status is RtkTaskStatus.Queued or RtkTaskStatus.Running)
-        {
-            await Task.Delay(1000);
-            var state = QueueService.GetTaskState(task.TaskId);
-            if (state is null)
-            {
-                break;
-            }
-
-            task.Status = state.Status;
-            task.IsCompleted = state.Status == RtkTaskStatus.Completed;
-            task.Error = state.Error;
-
-            await InvokeAsync(StateHasChanged);
-            if (state.Status == RtkTaskStatus.Completed)
-            {
-                Snackbar.Add("任务已完成！", Severity.Success);
-            }
-            else if (state.Status is RtkTaskStatus.Failed or RtkTaskStatus.TimedOut)
-            {
-                Snackbar.Add($"任务失败：{state.Error}", Severity.Error);
-            }
-        }
-    }
-
-    private static Color GetStatusColor(RtkTaskStatus status)
-    {
-        return status switch
-        {
-            RtkTaskStatus.Queued => Color.Info,
-            RtkTaskStatus.Running => Color.Warning,
-            RtkTaskStatus.Completed => Color.Success,
-            RtkTaskStatus.Failed => Color.Error,
-            RtkTaskStatus.TimedOut => Color.Error,
-            _ => Color.Default
-        };
-    }
-
-    private static string GetStatusText(RtkTaskStatus status)
-    {
-        return status switch
-        {
-            RtkTaskStatus.Queued => "排队中",
-            RtkTaskStatus.Running => "处理中",
-            RtkTaskStatus.Completed => "完成",
-            RtkTaskStatus.Failed => "失败",
-            RtkTaskStatus.TimedOut => "超时",
-            _ => "未知"
-        };
-    }
-
-    private void SyncModeFromTab()
-    {
-        ConfigState.SPPOptions.SolutionMode = CurrentMode;
-    }
-}
