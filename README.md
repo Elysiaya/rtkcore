@@ -13,12 +13,20 @@ RTK定位服务提供Web界面和REST API，允许用户：
 - 下载定位计算结果
 - 在地图上可视化结果
 
+**项目组成：**
+
+- **Rtk.Core**: RTK核心引擎库，封装RTKLib调用
+- **Rtk.Web**: Web应用，提供用户界面和REST API
+- **Rtk.Download**: GNSS数据下载工具，支持从FTP服务器下载各类GNSS数据
+- **Rtk.TestConsole**: 控制台测试项目，用于测试核心功能
+
 **核心技术栈：**
 
 - 后端：ASP.NET Core 10.0 + Blazor Server
 - 计算引擎：RTKLib (`rnx2rtkp`)
 - UI框架：MudBlazor + LeafletForBlazor
 - 队列系统：System.Threading.Channels (异步处理)
+- FTP客户端：FluentFTP (用于GNSS数据下载)
 
 ---
 
@@ -27,9 +35,10 @@ RTK定位服务提供Web界面和REST API，允许用户：
 ```
 MyRtkService/
 ├── Rtk.Core/                 # RTK核心引擎库
-│   ├── RtkEngine.cs.cs       # RTKLib包装层（进程调用）
+│   ├── RtkEngine.cs          # RTKLib包装层（进程调用）
 │   ├── rtklibconfig/
 │   │   ├── Config.cs         # 配置基类
+│   │   ├── RtkLibEnums.cs    # RTKLib枚举定义
 │   │   ├── RtkLibSPPOptions.cs     # SPP模式参数
 │   │   └── RtkLibPPPOptions.cs     # PPP模式参数
 │   ├── SPP.conf              # SPP默认配置文件
@@ -45,22 +54,32 @@ MyRtkService/
 │   │   └── RtkRequestDto.cs  # 数据传输对象
 │   ├── Pages/
 │   │   ├── _Host.cshtml      # 页面模板
-│   │   └── Index.razor       # 主页
+│   │   ├── Index.razor       # 主页
+│   │   ├── PppPage.razor     # PPP模式页面
+│   │   └── SppPage.razor     # SPP模式页面
 │   ├── Shared/
 │   │   ├── MainLayout.razor
 │   │   ├── Map.razor         # 地图组件
-│   │   ├── Ppp.razor         # PPP模式界面
-│   │   ├── Spp.razor         # SPP模式界面
+│   │   ├── Ppp.razor         # PPP模式界面组件
+│   │   ├── Spp.razor         # SPP模式界面组件
+│   │   ├── ModeWorkbench.razor    # 模式工作台组件
 │   │   ├── RtkLibConfig.razor     # 配置编辑组件
 │   │   ├── RtkLibConfigState.cs   # 状态管理
 │   │   └── TaskViewModel.cs  # 任务列表视图模型
 │   ├── Data/
-│   │   ├── Tasks/            # 任务数据存储（自动生成）
-│   │   │   └── {TaskId}/     # 每个任务一个独立文件夹
-│   │   └── DataPool/brdc/    # 广播星历数据池
+│   │   └── Tasks/            # 任务数据存储（自动生成）
+│   │       └── {TaskId}/     # 每个任务一个独立文件夹
+│   ├── DataPool/             # 数据池目录
+│   │   └── brdc/             # 广播星历数据池
 │   ├── appsettings.json      # 应用配置
 │   ├── appsettings.Development.json
 │   └── Rtk.Web.csproj
+│
+├── Rtk.Download/             # GNSS数据下载工具
+│   ├── Program.cs            # 控制台入口
+│   ├── GNSSDataDownload.cs   # GNSS数据下载核心类
+│   ├── FtpDownloader.cs      # FTP下载封装
+│   └── Rtk.Download.csproj
 │
 ├── Rtk.TestConsole/          # 控制台测试项目
 │   ├── Program.cs
@@ -498,6 +517,7 @@ RTKLib使用BSD许可证。详见 [RTKLib许可证](http://www.rtklib.com/)
 - [RINEX格式说明](https://www.igs.org/formats)
 - [ASP.NET Core文档](https://docs.microsoft.com/aspnet/core)
 - [Blazor文档](https://docs.microsoft.com/aspnet/blazor)
+- [FluentFTP文档](https://github.com/robinrodricks/FluentFTP)
 
 ---
 
