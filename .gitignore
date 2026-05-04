@@ -69,6 +69,9 @@ Publish/*.dll
 Publish/*.pdb
 Publish/*.exe
 
+# RTKLib binaries
+Rtk.Core/bin/rnx2rtkp*
+
 # Test results
 TestResults/
 *.trx
